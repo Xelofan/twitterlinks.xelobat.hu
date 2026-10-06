@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Twitter Embed Fixer List</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --border: #2a2e38;
+    --text: #e6e8ec;
+    --muted: #8b8f9a;
+    --accent: #4da6ff;
+    --accent-hover: #74b9ff;
+    --good: #38c172;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2rem 1rem 4rem;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .wrap { width: 100%; max-width: 860px; }
+
+  h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
+
+  .description {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0 2rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .input-section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .input-section label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .input-row { display: flex; gap: 0.5rem; }
+  #tweetUrl {
+    flex: 1;
+    padding: 0.65rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #0d0f13;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+  #tweetUrl:focus { outline: none; border-color: var(--accent); }
+  #clearBtn {
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #0d0f13;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  #clearBtn:hover { color: var(--text); border-color: var(--accent); }
+  .hint { font-size: 0.8rem; color: var(--muted); margin-top: 0.6rem; }
+  .hint code { color: var(--accent); }
+
+  .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td {
+    padding: 0.8rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.92rem;
+    vertical-align: middle;
+  }
+  th {
+    background: #1c2028;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #1b1f27; }
+
+  td.domain {
+    font-weight: 600;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  
+  /* Inner wrapper for domain + GitHub icon */
+  .domain-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  a.gh-icon-link {
+    display: inline-flex;
+    align-items: center;
+    color: var(--muted);
+    line-height: 0;
+    flex-shrink: 0;
+  }
+  a.gh-icon-link:hover { color: var(--accent); }
+  a.gh-icon-link svg { width: 16px; height: 16px; display: block; }
+
+  td.service {
+    color: var(--muted);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .na { color: var(--muted); font-style: italic; }
+
+  /* Inner wrapper for Copy button + URL */
+  .fixed-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+  .fixed-inner .fixed-url {
+    color: var(--muted);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+  }
+
+  .copy-btn {
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #0d0f13;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .copy-btn:hover { border-color: var(--accent); }
+  .copy-btn.copied { border-color: var(--good); color: var(--good); }
+
+  .empty-row td {
+    text-align: center;
+    color: var(--muted);
+    padding: 1.5rem;
+  }
+
+  footer {
+    margin-top: 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  /* Below 640px responsive styles */
+  @media (max-width: 640px) {
+    .table-scroll { overflow-x: visible; }
+    thead { display: none; }
+    table, tbody, tr, td { display: block; width: auto !important; }
+    tr {
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 0;
+    }
+    tr:last-child { border-bottom: none; }
+    td {
+      border-bottom: none;
+      padding: 0.3rem 1rem;
+    }
+    td::before {
+      content: attr(data-label);
+      display: block;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+    }
+    td.domain,
+    td.service {
+      white-space: normal;
+      word-break: break-word;
+    }
+    .fixed-inner {
+      flex-wrap: wrap;
+    }
+    .fixed-inner .fixed-url {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+      word-break: break-all;
+      max-width: 100%;
+      flex-basis: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Twitter / X Embed Fixer List</h1>
+
+  <div class="description" id="description-text">
+    A long list of <sub>(sometimes)</sub> funny Twitter embed fixer services. The main instances are put at the top and community/funny ones are below.<br><br>
+    If you find a new funny domain that's not on this list, feel free to let me know <a href="https://x.twinky.men">on GitHub</a>.
+  </div>
+
+  <div class="input-section">
+    <label for="tweetUrl">Paste a twitter.com / x.com link:</label>
+    <div class="input-row">
+      <input type="text" id="tweetUrl" placeholder="https://x.com/someuser/status/1234567890" />
+      <button id="clearBtn" type="button">Clear</button>
+    </div>
+    <p class="hint">Fixed links appear below as soon as you type a valid <code>twitter.com</code> or <code>x.com</code> URL. Click <b>Copy</b> on any row.</p>
+  </div>
+
+  <div class="table-scroll">
+  <table>
+    <thead>
+      <tr>
+        <th>Domain</th>
+        <th>Service</th>
+        <th>Fixed link</th>
+      </tr>
+    </thead>
+    <tbody id="fixerTableBody">
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<script>
+  const fixers = [
+    { domain: "fixupx.com",      service: "FxEmbed",  github: "https://github.com/FxEmbed/FxEmbed" },
+    { domain: "fxtwitter.com",   service: "FxEmbed",  github: "https://github.com/FxEmbed/FxEmbed" },
+    { domain: "vxtwitter.com",   service: "BetterTwitFix", github: "https://github.com/dylanpdx/BetterTwitFix" },
+    { domain: "fixvx.com",       service: "BetterTwitFix", github: "https://github.com/dylanpdx/BetterTwitFix" },
+    { domain: "twittpr.com",     service: "FxEmbed", github: "https://github.com/FxEmbed/FxEmbed" },
+    { domain: "stupidpenisx.com",service: "BetterTwitFix",       github: "https://github.com/dylanpdx/BetterTwitFix" },
+    { domain: "boypussyx.com",    service: "FxEmbed",                      github: "" },
+    { domain: "peepeepoopoodumdumtwitterx.org",    service: "FxEmbed",                      github: "" },
+    { domain: "yiffx.com",    service: "FxEmbed",                      github: "" },
+    { domain: "imthehottest18yearoldononlyfansx.com",    service: "FxEmbed",                      github: "" },
+    { domain: "cunnyx.com",    service: "FxEmbed",                      github: "" },
+    { domain: "boycuntx.com",    service: "FxEmbed",                      github: "" },
+    { domain: "autistic.kids",    service: "FxEmbed",                      github: "" },
+    { domain: "yaoisex.com",    service: "FxEmbed",                      github: "" },
+    { domain: "niggerfaggotx.com",    service: "FxEmbed",                      github: "" },
+    { domain: "forsenx.com",    service: "FxEmbed",                      github: "" },
+    { domain: "ucobx.com",    service: "FxEmbed",                      github: "" },
+    { domain: "x.twinky.men",    service: "FxEmbed",                      github: "" },
+    { domain: "epsteinx.com",    service: "FxEmbed",                      github: "" },
+    { domain: "mpregx.com",    service: "BetterTwitFix",                      github: "" },
+    { domain: "girlcockx.com",    service: "BetterTwitFix",                      github: "" },
+    { domain: "hitlerx.com",    service: "BetterTwitFix",                      github: "" },
+    { domain: "hotyurisex.com",    service: "BetterTwitFix",                      github: "" },
+    { domain: "furryfeetx.com",    service: "BetterTwitFix",                      github: "" },
+    { domain: "catgirlsex.com",    service: "",                      github: "" },
+    { domain: "skibidix.com",    service: "",                      github: "" },
+  ];
+
+  const GITHUB_ICON_SVG = `<svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>`;
+
+  const tbody = document.getElementById("fixerTableBody");
+  const input = document.getElementById("tweetUrl");
+  const clearBtn = document.getElementById("clearBtn");
+
+  function extractPath(url) {
+    try {
+      const trimmed = url.trim();
+      if (!trimmed) return null;
+      const withProto = /^https?:\/\//i.test(trimmed) ? trimmed : "https://" + trimmed;
+      const u = new URL(withProto);
+      const host = u.hostname.replace(/^www\./, "").toLowerCase();
+      if (host === "twitter.com" || host === "x.com") {
+        return u.pathname + u.search + u.hash;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function buildFixedUrl(domain, path) {
+    return "https://" + domain + path;
+  }
+
+  function renderTable() {
+    const rawInput = input.value;
+    const path = extractPath(rawInput);
+
+    tbody.innerHTML = "";
+
+    if (fixers.length === 0) {
+      const tr = document.createElement("tr");
+      tr.className = "empty-row";
+      tr.innerHTML = `<td colspan="3">No fixer links added yet.</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    fixers.forEach((fixer) => {
+      const tr = document.createElement("tr");
+
+      // 1. DOMAIN CELL
+      const tdDomain = document.createElement("td");
+      tdDomain.className = "domain";
+      tdDomain.setAttribute("data-label", "Domain");
+
+      const domainInner = document.createElement("div");
+      domainInner.className = "domain-inner";
+
+      const domainSpan = document.createElement("span");
+      domainSpan.textContent = fixer.domain;
+      domainSpan.title = fixer.domain;
+      domainInner.appendChild(domainSpan);
+
+      if (fixer.github && fixer.github.trim() !== "") {
+        const a = document.createElement("a");
+        a.href = fixer.github;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.className = "gh-icon-link";
+        a.title = "View on GitHub";
+        a.innerHTML = GITHUB_ICON_SVG;
+        domainInner.appendChild(a);
+      }
+      tdDomain.appendChild(domainInner);
+      tr.appendChild(tdDomain);
+
+      // 2. SERVICE CELL
+      const tdService = document.createElement("td");
+      tdService.className = "service";
+      tdService.setAttribute("data-label", "Service");
+      const serviceText = fixer.service && fixer.service.trim() !== "" ? fixer.service : "N/A";
+      tdService.textContent = serviceText;
+      tdService.title = serviceText;
+      if (!fixer.service || fixer.service.trim() === "") tdService.classList.add("na");
+      tr.appendChild(tdService);
+
+      // 3. FIXED LINK CELL
+      const tdFixed = document.createElement("td");
+      tdFixed.setAttribute("data-label", "Fixed link");
+      if (path) {
+        const fixedUrl = buildFixedUrl(fixer.domain, path);
+
+        const fixedInner = document.createElement("div");
+        fixedInner.className = "fixed-inner";
+
+        const btn = document.createElement("button");
+        btn.className = "copy-btn";
+        btn.type = "button";
+        btn.textContent = "Copy";
+        btn.dataset.url = fixedUrl;
+        btn.addEventListener("click", () => copyToClipboard(fixedUrl, btn));
+
+        const codeSpan = document.createElement("span");
+        codeSpan.className = "fixed-url";
+        codeSpan.title = fixedUrl;
+        codeSpan.textContent = fixedUrl;
+
+        fixedInner.appendChild(btn);
+        fixedInner.appendChild(codeSpan);
+        tdFixed.appendChild(fixedInner);
+      } else {
+        tdFixed.classList.add("na");
+        tdFixed.textContent = "Paste a twitter.com / x.com link above";
+      }
+      tr.appendChild(tdFixed);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function copyToClipboard(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const original = btn.textContent;
+      btn.textContent = "Copied!";
+      btn.classList.add("copied");
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.classList.remove("copied");
+      }, 1200);
+    }).catch(() => {
+      const tmp = document.createElement("textarea");
+      tmp.value = text;
+      document.body.appendChild(tmp);
+      tmp.select();
+      document.execCommand("copy");
+      document.body.removeChild(tmp);
+      btn.textContent = "Copied!";
+      setTimeout(() => (btn.textContent = "Copy"), 1200);
+    });
+  }
+
+  input.addEventListener("input", renderTable);
+  clearBtn.addEventListener("click", () => {
+    input.value = "";
+    renderTable();
+    input.focus();
+    history.replaceState(null, "", window.location.pathname + window.location.search);
+  });
+
+  function loadFromHash() {
+    const raw = window.location.hash.slice(1);
+    if (!raw) return;
+    let decoded = raw;
+    try {
+      decoded = decodeURIComponent(raw);
+    } catch (e) {}
+    input.value = decoded;
+  }
+
+  loadFromHash();
+  renderTable();
+
+  window.addEventListener("hashchange", () => {
+    loadFromHash();
+    renderTable();
+  });
+</script>
+</body>
+</html>
